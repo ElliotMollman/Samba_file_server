@@ -1,0 +1,54 @@
+In this instance, I will be installing Ubuntu server 22.04. on my machine, as well as Samba which will be used to share files accross my home network. Access by users can be determined by Samba by setting up passwords or by allowing certain users access, but I will be 
+allowing everyone on my sub-network to locate the files.
+#
+#
+#
+Step 1: Install Ubuntu Server 22.04.
+Step 2: Install Samba:
+$Sudo apt install samba -y
+$systemctl restart smbd
+Step 3: allow Samba through the firewall, then edit the samba config file to locate the files to be shared and add permissions.
+$ufw allow samba
+Step 4: Next I will add a new user to my ubuntu machine and then add it to the samba password list
+$useradd guest1
+$passwd guest1
+Enter password:
+
+$smbpasswd -a guest1
+Enter password:
+(Now that we have a new guest user and have added it to samba, the users from other machines in the same workgroup accessing this server will need to log into this guest account to see the files.)
+#
+#
+#
+-------SAMBA CONFIG FILE-------
+[global] (Parameters in this section apply to the server as a whole)
+Public = yes
+wins support = yes
+local master = yes
+preferred master = yes
+
+----------Here’s a brief explanation of these parameters------------
+
+wins support = yes: This enables WINS (Windows Internet Name Service) support on the Samba server. WINS is a network name resolution protocol used in Windows networks.
+local master = yes: This makes the Samba server a local master browser, which collects and distributes information about what systems and services are available on the network.
+preferred master = yes: This makes the Samba server the preferred master browser, meaning it will win any elections for the role of master browser.
+
+#
+#
+#
+#
+[share1] (This name relates to my folder which I am sharing, called "share1")
+	Path = /home/elliot/share1
+	Browsable = yes
+	Writable = yes
+	Read only = no
+	Available = yes
+	Public = yes
+	valid users = guest1 (I have added this user recently)
+#
+#
+#
+#
+Connect to drive from windows by using run app. Then type in \\(ip address), which is 192.168.100.5 in this case.
+
+Samba uses ports 138, 139, and 445 TCP, use ufw allow 139 and 445 to allow on firewall.
